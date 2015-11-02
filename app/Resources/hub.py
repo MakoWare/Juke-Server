@@ -21,18 +21,25 @@ class HubResource(Resource):
             abort(404, message="Hub doesn't exist".format(id))
         return hub
 
-    def put(self):
+    def put(self, id):
         parsed_args = parser.parse_args()
-        hub = Hub(name=parsed_args['name'])
+        hub = db_session.query(Hub).filter(Hub.id == id).first()
+        if not hub:
+            abort(404, message="Hub doesn't exist".format(id))
+
+        hub.name = parsed_args['name']
         db_session.add(hub)
         db_session.commit()
-        return todo, 201
+        return hub.as_dict(), 201
 
 
-    def delete(self, todo_id):
-
-
-        return '', 204
+    def delete(self, id):
+        hub = db_session.query(Hub).filter(Hub.id == id).first()
+        if not hub:
+            abort(404, message="Hub {} doesn't exist".format(id))
+        db_session.delete(hub)
+        db_session.commit()
+        return {}, 204
 
 
 class HubListResource(Resource):
